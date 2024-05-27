@@ -14,11 +14,12 @@ version = os.getenv('APP_VERSION', '1.0')
 
 def create_connection():
     return mysql.connector.connect(
-        host="db",
+        host="",  # Replace "mysql" with the hostname or IP address of your MySQL service
         user="user",
         password="password",
         database="app_db"
     )
+
 
 def init_db():
     conn = create_connection()
