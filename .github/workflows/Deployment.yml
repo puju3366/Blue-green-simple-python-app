@@ -35,4 +35,4 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: puju3366/APP:${{env.APP_VERSION}}
+          tags: puju3366/app:${{env.APP_VERSION}}
