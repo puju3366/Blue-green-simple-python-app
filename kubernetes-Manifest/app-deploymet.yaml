@@ -23,6 +23,7 @@ spec:
         image: puju3366/app:1.0
         ports:
         - containerPort: 5000
+        imagePullPolicy: Always
 
 
 
