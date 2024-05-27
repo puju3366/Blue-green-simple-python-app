@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pytonh-app-db-deployment
+  name: pytonh-app
   namespace: development
   labels:
     app: python-app
