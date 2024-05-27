@@ -16,7 +16,7 @@ import mysql.connector
 
 def create_connection():
     return mysql.connector.connect(
-        host="mysql",  # Hostname of your MySQL service
+        host="10.244.226.103",  # Hostname of your MySQL service
         user="user",
         password="password",
         database="app_db"
