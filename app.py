@@ -12,9 +12,11 @@ Session(app)
 
 version = os.getenv('APP_VERSION', '1.0')
 
+import mysql.connector
+
 def create_connection():
     return mysql.connector.connect(
-        host="python-db-service.development.svc.cluster.local",  # Hostname of your MySQL service
+        host="mysql",  # Hostname of your MySQL service
         user="user",
         password="password",
         database="app_db"
