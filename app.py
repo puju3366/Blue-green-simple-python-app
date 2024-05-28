@@ -1,7 +1,7 @@
-from flask import Flask, render_template, session
-from flask_session import Session
 import mysql.connector
 from mysql.connector import Error
+from flask import Flask, render_template, session
+from flask_session import Session
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -17,18 +17,22 @@ Session(app)
 version = os.getenv('APP_VERSION', '1.0')
 
 def create_connection():
-    return mysql.connector.connect(
-        host=os.getenv('MYSQL_HOST'),
-        user=os.getenv('MYSQL_USER'),
-        password=os.getenv('MYSQL_PASSWORD'),
-    )
-
-# The rest of your code remains unchanged...
-
-
-def init_db():
     try:
-        conn = create_connection()
+        conn = mysql.connector.connect(
+            host=os.getenv('MYSQL_HOST'),
+            user=os.getenv('MYSQL_USER'),
+            password=os.getenv('MYSQL_PASSWORD'),
+            database='app_db'
+        )
+        return conn
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+        return None
+
+def init_db(conn):
+    if conn is None:
+        return
+    try:
         cursor = conn.cursor()
 
         # Create database if not exists
@@ -50,34 +54,51 @@ def init_db():
     finally:
         if conn.is_connected():
             cursor.close()
-            conn.close()
 
 @app.route('/')
 def index():
     conn = create_connection()
+    if conn is None:
+        return "Error connecting to database"
+
     cursor = conn.cursor()
 
     # Initialize database if not already initialized
-    init_db()
+    init_db(conn)
 
     # Record a new visit if the session is new
     if 'visited' not in session:
-        cursor.execute("INSERT INTO visitors () VALUES ()")
-        conn.commit()
-        session['visited'] = True
+        try:
+            cursor.execute("INSERT INTO visitors () VALUES ()")
+            conn.commit()
+            session['visited'] = True
+        except Error as e:
+            print(f"Error inserting visit record: {e}")
 
     # Get total visitors
-    cursor.execute("SELECT COUNT(*) FROM visitors")
-    total_visitors = cursor.fetchone()[0]
+    try:
+        cursor.execute("SELECT COUNT(*) FROM visitors")
+        total_visitors = cursor.fetchone()[0]
+    except Error as e:
+        print(f"Error retrieving total visitors: {e}")
+        total_visitors = 0
 
     # Calculate live visitors (e.g., visits in the last 5 minutes)
-    five_minutes_ago = datetime.now() - timedelta(minutes=5)
-    cursor.execute("SELECT COUNT(*) FROM visitors WHERE visit_time >= %s", (five_minutes_ago,))
-    live_visitors = cursor.fetchone()[0]
+    try:
+        five_minutes_ago = datetime.now() - timedelta(minutes=5)
+        cursor.execute("SELECT COUNT(*) FROM visitors WHERE visit_time >= %s", (five_minutes_ago,))
+        live_visitors = cursor.fetchone()[0]
+    except Error as e:
+        print(f"Error retrieving live visitors: {e}")
+        live_visitors = 0
 
     # Get total registered users
-    cursor.execute("SELECT COUNT(*) FROM users")
-    total_users = cursor.fetchone()[0]
+    try:
+        cursor.execute("SELECT COUNT(*) FROM users")
+        total_users = cursor.fetchone()[0]
+    except Error as e:
+        print(f"Error retrieving total users: {e}")
+        total_users = 0
 
     cursor.close()
     conn.close()
