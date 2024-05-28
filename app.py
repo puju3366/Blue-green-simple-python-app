@@ -14,7 +14,7 @@ app.secret_key = 'supersecretkey'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
-version = os.getenv('APP_VERSION', '1.0')
+version = os.getenv('APP_VERSION', '2.0')
 
 def create_connection():
     try:
