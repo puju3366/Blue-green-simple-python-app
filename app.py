@@ -16,7 +16,7 @@ import mysql.connector
 
 def create_connection():
     return mysql.connector.connect(
-        host="db",  # Service name in Docker Compose file
+        host="10.98.133.45",  # Service name in Docker Compose file
         user="user",
         password="password",
         database="app_db"
