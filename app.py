@@ -4,10 +4,6 @@ import mysql.connector
 from mysql.connector import Error
 import os
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -16,43 +12,31 @@ Session(app)
 
 version = os.getenv('APP_VERSION', '1.0')
 
-# Read environment variables for MySQL connection details
-MYSQL_HOST = os.getenv('MYSQL_HOST')
-MYSQL_USER = os.getenv('MYSQL_USER')
-MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
-MYSQL_DATABASE = os.getenv('MYSQL_DATABASE')
+import mysql.connector
 
 def create_connection():
     return mysql.connector.connect(
-        host=MYSQL_HOST,
-        user=MYSQL_USER,
-        password=MYSQL_PASSWORD,
-        database=MYSQL_DATABASE
+        host="10.244.226.101",  # Hostname of your MySQL service
+        user="user",
+        password="password",
+        database="app_db"
     )
+
+
 
 def init_db():
     conn = create_connection()
     cursor = conn.cursor()
-    try:
-        # Create database if not exists
-        cursor.execute("CREATE DATABASE IF NOT EXISTS app_db")
-        # Create users table if not exists
-        cursor.execute("CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), email VARCHAR(255))")
-        conn.commit()
-        print("Database initialization successful.")
-    except Error as e:
-        print(f"Error initializing database: {e}")
-    finally:
-        cursor.close()
-        conn.close()
+    cursor.execute("CREATE TABLE IF NOT EXISTS visitors (id INT AUTO_INCREMENT PRIMARY KEY, visit_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), email VARCHAR(255))")
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 @app.route('/')
 def index():
     conn = create_connection()
     cursor = conn.cursor()
-
-    # Initialize database if not already initialized
-    init_db()
 
     # Record a new visit if the session is new
     if 'visited' not in session:
@@ -79,4 +63,5 @@ def index():
     return render_template('index.html', version=version, total_visitors=total_visitors, live_visitors=live_visitors, total_users=total_users)
 
 if __name__ == '__main__':
+    init_db()
     app.run(host='0.0.0.0', port=5000)
