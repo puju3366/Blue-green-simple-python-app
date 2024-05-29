@@ -5,6 +5,7 @@ from flask_session import Session
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,7 +15,10 @@ app.secret_key = 'supersecretkey'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
-version = os.getenv('APP_VERSION', '2.0')
+logging.basicConfig(level=logging.DEBUG)
+
+version = os.getenv('APP_VERSION', '1.0')
+logging.debug(f"App version loaded: {version}")
 
 def create_connection():
     try:
