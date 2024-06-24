@@ -18,6 +18,14 @@ jobs:
       APP_VERSION: "2.0"
 
     steps:
+      - name: Run Trivy vulnerability scanner in repo mode
+      uses: aquasecurity/trivy-action@0.20.0
+      with:
+        scan-type: 'fs'
+        ignore-unfixed: true
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL'
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
