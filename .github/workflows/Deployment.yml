@@ -20,15 +20,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          scan-type: 'fs'
-          ignore-unfixed: true
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL'
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -41,10 +32,31 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          tags: puju3366/app:${{ env.APP_VERSION }}
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: 'image'
+          image-ref: puju3366/app:${{ env.APP_VERSION }}
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL'
+
+      - name: Push Docker image
+        if: success()
         uses: docker/build-push-action@v5
         with:
           push: true
           tags: puju3366/app:${{ env.APP_VERSION }}
 
-
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
